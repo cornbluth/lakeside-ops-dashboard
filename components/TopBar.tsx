@@ -50,7 +50,7 @@ function Balance() {
     balance === "loading" ? "—" :
     balance === "err"     ? "err" :
     balance === null      ? "—" :
-    `$${balance.toFixed(2)}`;
+    `$${parseFloat(String(balance)).toFixed(2)}`;
 
   const color =
     balance === "err"                          ? "#ef4444" :
