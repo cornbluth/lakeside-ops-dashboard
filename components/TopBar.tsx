@@ -27,6 +27,48 @@ function Clock() {
   );
 }
 
+function Balance() {
+  const [balance, setBalance] = useState<number | null | "loading" | "err">("loading");
+
+  useEffect(() => {
+    async function fetch_() {
+      try {
+        const res = await fetch("/api/openrouter-balance");
+        if (!res.ok) { setBalance("err"); return; }
+        const { balance: b } = await res.json();
+        setBalance(b ?? "err");
+      } catch {
+        setBalance("err");
+      }
+    }
+    fetch_();
+    const id = setInterval(fetch_, 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const display =
+    balance === "loading" ? "—" :
+    balance === "err"     ? "err" :
+    balance === null      ? "—" :
+    `$${balance.toFixed(2)}`;
+
+  const color =
+    balance === "err"                          ? "#ef4444" :
+    typeof balance === "number" && balance < 1 ? "#fb923c" :
+    "var(--press)";
+
+  return (
+    <div style={{ textAlign: "right" }}>
+      <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--dim)" }}>
+        OpenRouter
+      </div>
+      <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color }}>
+        {display}
+      </div>
+    </div>
+  );
+}
+
 export default function TopBar() {
   return (
     <header
@@ -87,15 +129,7 @@ export default function TopBar() {
       </div>
 
       <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 24 }}>
-        {/* OpenRouter balance placeholder */}
-        <div style={{ textAlign: "right" }}>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--dim)" }}>
-            OpenRouter
-          </div>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "var(--press)" }}>
-            $—
-          </div>
-        </div>
+        <Balance />
         <Clock />
       </div>
 
