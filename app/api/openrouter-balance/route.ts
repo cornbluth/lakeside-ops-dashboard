@@ -5,18 +5,16 @@ export async function GET() {
   if (!apiKey) return Response.json({ balance: null });
 
   try {
-    const res = await fetch('https://openrouter.ai/api/v1/auth/key', {
+    const res = await fetch('https://openrouter.ai/api/v1/credits', {
       headers: { Authorization: `Bearer ${apiKey}` },
       signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) return Response.json({ balance: null });
 
-    const { data } = await res.json();
-    // limit_remaining = credit limit minus usage; fall back to negating usage
-    const balance: number | null =
-      data?.limit_remaining ?? (data?.usage != null ? -data.usage : null);
+    const data = await res.json();
+    const balance = data.data.total_credits - data.data.total_usage;
 
-    return Response.json({ balance });
+    return Response.json({ balance: balance.toFixed(2) });
   } catch {
     return Response.json({ balance: null });
   }
